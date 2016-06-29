@@ -2,7 +2,10 @@ package org.codehaus.jackson.impl;
 
 import java.io.ByteArrayOutputStream;
 
+import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.io.IOContext;
 import org.codehaus.jackson.util.BufferRecycler;
 
@@ -24,5 +27,29 @@ public class TestUtf8Generator
         }
         gen.writeString(str);
         gen.flush();
+    }
+
+    public void testSurrogatesWithRaw() throws Exception
+    {
+        final String VALUE = quote("\ud83d\ude0c");
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        IOContext ioc = new IOContext(new BufferRecycler(), bytes, true);
+        JsonGenerator jgen = new Utf8Generator(ioc, 0, null, bytes);
+        jgen.writeStartArray();
+        jgen.writeRaw(VALUE);
+        jgen.writeEndArray();
+        jgen.close();
+
+        final byte[] JSON = bytes.toByteArray();
+
+        JsonParser jp = new JsonFactory().createJsonParser(JSON);
+        assertToken(JsonToken.START_ARRAY, jp.nextToken());
+        assertToken(JsonToken.VALUE_STRING, jp.nextToken());
+        String str = jp.getText();
+        assertEquals(2, str.length());
+        assertEquals((char) 0xD83D, str.charAt(0));
+        assertEquals((char) 0xDE0C, str.charAt(1));
+        assertToken(JsonToken.END_ARRAY, jp.nextToken());
+        jp.close();
     }
 }

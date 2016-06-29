@@ -17,12 +17,12 @@ public class Utf8Generator
     private final static byte BYTE_u = (byte) 'u';
 
     private final static byte BYTE_0 = (byte) '0';
-    
+
     private final static byte BYTE_LBRACKET = (byte) '[';
     private final static byte BYTE_RBRACKET = (byte) ']';
     private final static byte BYTE_LCURLY = (byte) '{';
     private final static byte BYTE_RCURLY = (byte) '}';
- 
+
     private final static byte BYTE_BACKSLASH = (byte) '\\';
     private final static byte BYTE_SPACE = (byte) ' ';
     private final static byte BYTE_COMMA = (byte) ',';
@@ -36,7 +36,7 @@ public class Utf8Generator
 
     // intermediate copies only made up to certain length...
     private final static int MAX_BYTES_TO_BUFFER = 512;
-    
+
     final static byte[] HEX_CHARS = CharTypes.copyHexBytes();
 
     private final static byte[] NULL_BYTES = { 'n', 'u', 'l', 'l' };
@@ -48,7 +48,7 @@ public class Utf8Generator
      * (first 128 character codes), used for single-byte UTF-8 characters.
      */
     protected final static int[] sOutputEscapes = CharTypes.get7BitOutputEscapes();
-    
+
     /*
     /**********************************************************
     /* Configuration, basic I/O
@@ -91,11 +91,11 @@ public class Utf8Generator
      * Definition of custom character escapes to use for generators created
      * by this factory, if any. If null, standard data format specific
      * escapes are used.
-     * 
+     *
      * @since 1.8
      */
     protected CharacterEscapes _characterEscapes;
-    
+
     /*
     /**********************************************************
     /* Output buffering
@@ -125,18 +125,18 @@ public class Utf8Generator
      * in the output buffer after escaping
      */
     protected final int _outputMaxContiguous;
-    
+
     /**
      * Intermediate buffer in which characters of a String are copied
      * before being encoded.
      */
     protected char[] _charBuffer;
-    
+
     /**
      * Length of <code>_charBuffer</code>
      */
     protected final int _charBufferLength;
-    
+
     /**
      * 6 character temporary buffer allocated if needed, for constructing
      * escape sequences
@@ -148,7 +148,7 @@ public class Utf8Generator
      * needs to be returned to recycler once we are done) or not.
      */
     protected boolean _bufferRecyclable;
-    
+
     /*
     /**********************************************************
     /* Life-cycle
@@ -158,7 +158,7 @@ public class Utf8Generator
     public Utf8Generator(IOContext ctxt, int features, ObjectCodec codec,
             OutputStream out)
     {
-        
+
         super(features, codec);
         _ioContext = ctxt;
         _outputStream = out;
@@ -182,7 +182,7 @@ public class Utf8Generator
     public Utf8Generator(IOContext ctxt, int features, ObjectCodec codec,
             OutputStream out, byte[] outputBuffer, int outputOffset, boolean bufferRecyclable)
     {
-        
+
         super(features, codec);
         _ioContext = ctxt;
         _outputStream = out;
@@ -205,7 +205,7 @@ public class Utf8Generator
     /* Overridden configuration methods
     /**********************************************************
      */
-    
+
     @Override
     public JsonGenerator setHighestNonEscapedChar(int charCode) {
         _maximumNonEscapedChar = (charCode < 0) ? 0 : charCode;
@@ -232,7 +232,7 @@ public class Utf8Generator
     /**
      * Method for accessing custom escapes factory uses for {@link JsonGenerator}s
      * it creates.
-     * 
+     *
      * @since 1.8
      */
     @Override
@@ -244,7 +244,7 @@ public class Utf8Generator
     public Object getOutputTarget() {
         return _outputStream;
     }
-    
+
     /*
     /**********************************************************
     /* Overridden methods
@@ -281,7 +281,7 @@ public class Utf8Generator
         }
         _writeFieldName(name);
     }
-    
+
     @Override
     public final void writeFieldName(SerializedString name)
         throws IOException, JsonGenerationException
@@ -460,8 +460,8 @@ public class Utf8Generator
             }
             _outputBuffer[_outputTail++] = BYTE_QUOTE;
         }
-    }    
-    
+    }
+
     /**
      * Specialized version of <code>_writeFieldName</code>, off-lined
      * to keep the "fast path" as simple (and hopefully fast) as possible.
@@ -528,7 +528,7 @@ public class Utf8Generator
             _outputBuffer[_outputTail++] = BYTE_QUOTE;
         }
     }
-    
+
     /*
     /**********************************************************
     /* Output method implementations, textual
@@ -676,7 +676,7 @@ public class Utf8Generator
         }
         _outputBuffer[_outputTail++] = BYTE_QUOTE;
     }
-    
+
     /*
     /**********************************************************
     /* Output method implementations, unprocessed ("raw")
@@ -754,7 +754,7 @@ public class Utf8Generator
                 _outputBuffer[_outputTail++] = (byte) (0xc0 | (ch >> 6));
                 _outputBuffer[_outputTail++] = (byte) (0x80 | (ch & 0x3f));
             } else {
-                _outputRawMultiByteChar(ch, cbuf, offset, len);
+                offset = _outputRawMultiByteChar(ch, cbuf, offset, len);
             }
         }
     }
@@ -786,7 +786,7 @@ public class Utf8Generator
     {
         final int end = _outputEnd;
         final byte[] bbuf = _outputBuffer;
-        
+
         main_loop:
         while (offset < len) {
             inner_loop:
@@ -812,11 +812,11 @@ public class Utf8Generator
                 bbuf[_outputTail++] = (byte) (0xc0 | (ch >> 6));
                 bbuf[_outputTail++] = (byte) (0x80 | (ch & 0x3f));
             } else {
-                _outputRawMultiByteChar(ch, cbuf, offset, len);
+                offset = _outputRawMultiByteChar(ch, cbuf, offset, len);
             }
         }
     }
-    
+
     /*
     /**********************************************************
     /* Output method implementations, base64-encoded binary
@@ -840,7 +840,7 @@ public class Utf8Generator
         }
         _outputBuffer[_outputTail++] = BYTE_QUOTE;
     }
-    
+
     /*
     /**********************************************************
     /* Output method implementations, primitive
@@ -870,7 +870,7 @@ public class Utf8Generator
         _outputBuffer[_outputTail++] = BYTE_QUOTE;
         _outputTail = NumberOutput.outputInt(i, _outputBuffer, _outputTail);
         _outputBuffer[_outputTail++] = BYTE_QUOTE;
-    }    
+    }
 
     @Override
     public void writeNumber(long l)
@@ -911,7 +911,7 @@ public class Utf8Generator
         }
     }
 
-    
+
     @Override
     public void writeNumber(double d)
         throws IOException, JsonGenerationException
@@ -965,7 +965,7 @@ public class Utf8Generator
     {
         _verifyValueWrite("write number");
         if (_cfgNumbersAsStrings) {
-            _writeQuotedRaw(encodedValue);            
+            _writeQuotedRaw(encodedValue);
         } else {
             writeRaw(encodedValue);
         }
@@ -983,7 +983,7 @@ public class Utf8Generator
         }
         _outputBuffer[_outputTail++] = BYTE_QUOTE;
     }
-    
+
     @Override
     public void writeBoolean(boolean state)
         throws IOException, JsonGenerationException
@@ -1191,7 +1191,7 @@ public class Utf8Generator
     /* Internal methods, mid-level writing, String segments
     /**********************************************************
      */
-    
+
     /**
      * Method called when String to write is long enough not to fit
      * completely in temporary copy buffer. If so, we will actually
@@ -1256,7 +1256,7 @@ public class Utf8Generator
         throws IOException, JsonGenerationException
     {
         // note: caller MUST ensure (via flushing) there's room for ASCII only
-        
+
         // Fast+tight loop for ASCII-only, no-escaping-needed output
         len += offset; // becomes end marker, then
 
@@ -1304,7 +1304,7 @@ public class Utf8Generator
 
         final byte[] outputBuffer = _outputBuffer;
         final int[] escCodes = _outputEscapes;
-        
+
         while (offset < end) {
             int ch = cbuf[offset++];
             if (ch <= 0x7F) {
@@ -1343,7 +1343,7 @@ public class Utf8Generator
     /**
      * Same as <code>_writeStringSegment2(char[], ...)</code., but with
      * additional escaping for high-range code points
-     * 
+     *
      * @since 1.8
      */
     private final void _writeStringSegmentASCII2(final char[] cbuf, int offset, final int end)
@@ -1353,13 +1353,13 @@ public class Utf8Generator
         if ((_outputTail +  6 * (end - offset)) > _outputEnd) {
             _flushBuffer();
         }
-    
+
         int outputPtr = _outputTail;
-    
+
         final byte[] outputBuffer = _outputBuffer;
         final int[] escCodes = _outputEscapes;
         final int maxUnescaped = _maximumNonEscapedChar;
-        
+
         while (offset < end) {
             int ch = cbuf[offset++];
             if (ch <= 0x7F) {
@@ -1401,7 +1401,7 @@ public class Utf8Generator
     /**
      * Same as <code>_writeStringSegmentASCII2(char[], ...)</code., but with
      * additional checking for completely custom escapes
-     * 
+     *
      * @since 1.8
      */
     private final void _writeCustomStringSegment2(final char[] cbuf, int offset, final int end)
@@ -1412,13 +1412,13 @@ public class Utf8Generator
             _flushBuffer();
         }
         int outputPtr = _outputTail;
-    
+
         final byte[] outputBuffer = _outputBuffer;
         final int[] escCodes = _outputEscapes;
         // may or may not have this limit
         final int maxUnescaped = (_maximumNonEscapedChar <= 0) ? 0xFFFF : _maximumNonEscapedChar;
         final CharacterEscapes customEscapes = _characterEscapes; // non-null
-        
+
         while (offset < end) {
             int ch = cbuf[offset++];
             if (ch <= 0x7F) {
@@ -1474,7 +1474,7 @@ public class Utf8Generator
         System.arraycopy(raw, 0, outputBuffer, outputPtr, len);
         return (outputPtr + len);
     }
-    
+
     private int _handleLongCustomEscape(byte[] outputBuffer, int outputPtr, int outputEnd, byte[] raw,
             int remainingChars)
         throws IOException, JsonGenerationException
@@ -1504,7 +1504,7 @@ public class Utf8Generator
     /* Internal methods, low-level writing, "raw UTF-8" segments
     /**********************************************************
      */
-    
+
     /**
      * Method called when UTF-8 encoded (but NOT yet escaped!) content is not guaranteed
      * to fit in the output buffer after escaping; as such, we just need to
@@ -1520,7 +1520,7 @@ public class Utf8Generator
             totalLen -= len;
         } while (totalLen > 0);
     }
-    
+
     private final void _writeUTF8Segment(byte[] utf8, final int offset, final int len)
         throws IOException, JsonGenerationException
     {
@@ -1535,7 +1535,7 @@ public class Utf8Generator
                 return;
             }
         }
-        
+
         // yes, fine, just copy the sucker
         if ((_outputTail + len) > _outputEnd) { // enough room or need to flush?
             _flushBuffer(); // but yes once we flush (caller guarantees length restriction)
@@ -1554,11 +1554,11 @@ public class Utf8Generator
             _flushBuffer();
             outputPtr = _outputTail;
         }
-        
+
         final byte[] outputBuffer = _outputBuffer;
         final int[] escCodes = _outputEscapes;
         len += offset; // so 'len' becomes 'end'
-        
+
         while (offset < len) {
             byte b = utf8[offset++];
             int ch = b;
@@ -1577,13 +1577,13 @@ public class Utf8Generator
         }
         _outputTail = outputPtr;
     }
-    
+
     /*
     /**********************************************************
     /* Internal methods, low-level writing, base64 encoded
     /**********************************************************
      */
-    
+
     protected void _writeBinary(Base64Variant b64variant, byte[] input, int inputPtr, final int inputEnd)
         throws IOException, JsonGenerationException
     {
@@ -1630,10 +1630,10 @@ public class Utf8Generator
     /* Internal methods, character escapes/encoding
     /**********************************************************
      */
-    
+
     /**
      * Method called to output a character that is beyond range of
-     * 1- and 2-byte UTF-8 encodings, when outputting "raw" 
+     * 1- and 2-byte UTF-8 encodings, when outputting "raw"
      * text (meaning it is not to be escaped or quoted)
      */
     private final int _outputRawMultiByteChar(int ch, char[] cbuf, int inputOffset, int inputLen)
@@ -1643,7 +1643,7 @@ public class Utf8Generator
         if (ch >= SURR1_FIRST) {
             if (ch <= SURR2_LAST) { // yes, outside of BMP
                 // Do we have second part?
-                if (inputOffset >= inputLen) { // nope... have to note down
+                if (inputOffset >= inputLen || cbuf == null) { // nope... have to note down
                     _reportError("Split surrogate on writeRaw() input (last character)");
                 }
                 _outputSurrogates(ch, cbuf[inputOffset]);
@@ -1670,14 +1670,14 @@ public class Utf8Generator
         bbuf[_outputTail++] = (byte) (0x80 | ((c >> 6) & 0x3f));
         bbuf[_outputTail++] = (byte) (0x80 | (c & 0x3f));
     }
-    
+
     /**
-     * 
+     *
      * @param ch
      * @param outputPtr Position within output buffer to append multi-byte in
-     * 
+     *
      * @return New output position after appending
-     * 
+     *
      * @throws IOException
      */
     private final int _outputMultiByteChar(int ch, int outputPtr)
@@ -1687,7 +1687,7 @@ public class Utf8Generator
         if (ch >= SURR1_FIRST && ch <= SURR2_LAST) { // yes, outside of BMP; add an escape
             bbuf[outputPtr++] = BYTE_BACKSLASH;
             bbuf[outputPtr++] = BYTE_u;
-            
+
             bbuf[outputPtr++] = HEX_CHARS[(ch >> 12) & 0xF];
             bbuf[outputPtr++] = HEX_CHARS[(ch >> 8) & 0xF];
             bbuf[outputPtr++] = HEX_CHARS[(ch >> 4) & 0xF];
@@ -1710,7 +1710,7 @@ public class Utf8Generator
         int c = 0x10000 + ((surr1 - SURR1_FIRST) << 10) + (surr2 - SURR2_FIRST);
         return c;
     }
-    
+
     private final void _writeNull() throws IOException
     {
         if ((_outputTail + 4) >= _outputEnd) {
@@ -1719,10 +1719,10 @@ public class Utf8Generator
         System.arraycopy(NULL_BYTES, 0, _outputBuffer, _outputTail, 4);
         _outputTail += 4;
     }
-        
+
     /**
      * Method called to write a generic Unicode escape for given character.
-     * 
+     *
      * @param charToEscape Character to escape using escape sequence (\\uXXXX)
      */
     private int _writeGenericEscape(int charToEscape, int outputPtr)
